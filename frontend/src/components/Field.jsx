@@ -1,0 +1,11 @@
+/** Labelled form input with inline validation message. Reusable across forms. */
+export default function Field({ label, error, children, hint }) {
+  return (
+    <label className="field">
+      <span className="field-label">{label}</span>
+      {children}
+      {hint && !error && <span className="field-hint">{hint}</span>}
+      {error && <span className="field-error">{error}</span>}
+    </label>
+  );
+}

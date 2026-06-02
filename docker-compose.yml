@@ -1,0 +1,60 @@
+# Orchestrates the full stack: PostgreSQL + FastAPI backend + React/nginx frontend.
+# Usage:
+#   cp .env.example .env   # then adjust if you like
+#   docker compose up --build
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: iom_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-inventory}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-inventory}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Not published to the host by default; only the backend talks to it.
+
+  backend:
+    build:
+      context: ./backend
+    container_name: iom_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-true}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-inventory}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      LOW_STOCK_THRESHOLD: ${LOW_STOCK_THRESHOLD:-10}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # The browser calls the backend directly on the host-published port.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api}
+    container_name: iom_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:
+    name: iom_postgres_data
