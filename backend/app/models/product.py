@@ -1,4 +1,3 @@
-"""Product ORM model."""
 from datetime import datetime
 
 from sqlalchemy import CheckConstraint, DateTime, Integer, Numeric, String, func
@@ -10,7 +9,6 @@ from app.core.database import Base
 class Product(Base):
     __tablename__ = "products"
     __table_args__ = (
-        # Stock can never drop below zero, enforced at the database level too.
         CheckConstraint("quantity_in_stock >= 0", name="ck_product_quantity_non_negative"),
         CheckConstraint("price >= 0", name="ck_product_price_non_negative"),
     )
@@ -28,6 +26,4 @@ class Product(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-    order_items: Mapped[list["OrderItem"]] = relationship(  # noqa: F821
-        back_populates="product"
-    )
+    order_items: Mapped[list["OrderItem"]] = relationship(back_populates="product")

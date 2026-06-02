@@ -1,4 +1,3 @@
-"""Aggregate router mounting every resource under the API prefix."""
 from fastapi import APIRouter
 
 from app.api.routes import customers, dashboard, orders, products

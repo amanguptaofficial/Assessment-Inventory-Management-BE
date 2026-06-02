@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { Plus, X, Eye, Trash2 } from "lucide-react";
 import { customersApi, ordersApi, productsApi } from "../api/resources";
 import { extractErrorMessage } from "../api/client";
 import useFetch from "../hooks/useFetch";
@@ -7,6 +8,9 @@ import { Loading, ErrorState, EmptyState } from "../components/StateViews";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Field from "../components/Field";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
+import { cardClass, inputClass, thClass, tdClass } from "../components/ui/styles";
 
 const money = (v) => `$${Number(v).toFixed(2)}`;
 
@@ -15,7 +19,6 @@ export default function Orders() {
   const { data: orders, loading, error, refetch } = useFetch(fetchOrders);
   const notify = useToast();
 
-  // Reference data for the create form, loaded lazily when the modal opens.
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
 
@@ -26,8 +29,22 @@ export default function Orders() {
   const [saving, setSaving] = useState(false);
 
   const [detail, setDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [toDelete, setToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  const openDetail = async (id) => {
+    setDetail(null);
+    setDetailLoading(true);
+    try {
+      const data = await ordersApi.get(id);
+      setDetail(data);
+    } catch (err) {
+      notify.error(extractErrorMessage(err));
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const productById = useMemo(
     () => Object.fromEntries(products.map((p) => [String(p.id), p])),
@@ -101,11 +118,11 @@ export default function Orders() {
 
   return (
     <section>
-      <div className="page-header">
-        <h1>Orders</h1>
-        <button className="btn btn-primary" onClick={openCreate}>
-          + Create Order
-        </button>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Orders</h1>
+        <Button onClick={openCreate} className="max-sm:w-full">
+          <Plus className="size-4" /> Create Order
+        </Button>
       </div>
 
       {loading ? (
@@ -115,33 +132,37 @@ export default function Orders() {
       ) : orders.length === 0 ? (
         <EmptyState message="No orders yet. Create your first order." />
       ) : (
-        <div className="card">
-          <table className="table">
+        <div className={`${cardClass} overflow-x-auto`}>
+          <table className="w-full border-collapse text-sm">
             <thead>
               <tr>
-                <th>Order #</th>
-                <th>Customer ID</th>
-                <th className="num">Items</th>
-                <th className="num">Total</th>
-                <th>Status</th>
-                <th className="actions-col">Actions</th>
+                <th className={thClass}>Order #</th>
+                <th className={thClass}>Customer ID</th>
+                <th className={`${thClass} text-right`}>Items</th>
+                <th className={`${thClass} text-right`}>Total</th>
+                <th className={thClass}>Status</th>
+                <th className={`${thClass} text-right`}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((o) => (
-                <tr key={o.id}>
-                  <td>#{o.id}</td>
-                  <td>{o.customer_id}</td>
-                  <td className="num">{o.items.length}</td>
-                  <td className="num">{money(o.total_amount)}</td>
-                  <td><span className="badge badge-ok">{o.status}</span></td>
-                  <td className="actions-col">
-                    <button className="btn btn-ghost btn-sm" onClick={() => setDetail(o)}>
-                      View
-                    </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => setToDelete(o)}>
-                      Cancel
-                    </button>
+                <tr key={o.id} className="hover:bg-slate-50">
+                  <td className={tdClass}>#{o.id}</td>
+                  <td className={tdClass}>{o.customer_id}</td>
+                  <td className={`${tdClass} text-right`}>{o.items.length}</td>
+                  <td className={`${tdClass} text-right`}>{money(o.total_amount)}</td>
+                  <td className={tdClass}>
+                    <Badge tone="ok">{o.status}</Badge>
+                  </td>
+                  <td className={`${tdClass} whitespace-nowrap text-right`}>
+                    <div className="inline-flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => openDetail(o.id)}>
+                        <Eye className="size-3.5" /> View
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => setToDelete(o)}>
+                        <Trash2 className="size-3.5" /> Cancel
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -150,11 +171,10 @@ export default function Orders() {
         </div>
       )}
 
-      {/* Create order modal */}
       <Modal title="Create Order" open={modalOpen} onClose={() => setModalOpen(false)}>
         <form onSubmit={onSubmit} noValidate>
           <Field label="Customer">
-            <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
+            <select className={inputClass} value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
               <option value="">Select a customer…</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -164,12 +184,13 @@ export default function Orders() {
             </select>
           </Field>
 
-          <div className="field-label" style={{ marginBottom: 6 }}>Products</div>
+          <div className="mb-1.5 text-[13px] font-semibold">Products</div>
           {lines.map((line, i) => {
             const p = productById[String(line.product_id)];
             return (
-              <div className="order-line" key={i}>
+              <div className="mb-2 grid grid-cols-[1fr_70px_30px] items-center gap-2 sm:grid-cols-[1fr_90px_34px]" key={i}>
                 <select
+                  className={inputClass}
                   value={line.product_id}
                   onChange={(e) => updateLine(i, "product_id", e.target.value)}
                 >
@@ -181,80 +202,91 @@ export default function Orders() {
                   ))}
                 </select>
                 <input
+                  className={`${inputClass} text-right`}
                   type="number"
                   min="1"
                   max={p ? p.quantity_in_stock : undefined}
                   value={line.quantity}
                   onChange={(e) => updateLine(i, "quantity", e.target.value)}
-                  className="qty-input"
                 />
                 <button
                   type="button"
-                  className="icon-btn"
+                  className="flex items-center justify-center rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-30"
                   onClick={() => removeLine(i)}
                   disabled={lines.length === 1}
                   aria-label="Remove line"
                 >
-                  &times;
+                  <X className="size-4" />
                 </button>
               </div>
             );
           })}
-          <button type="button" className="btn btn-ghost btn-sm" onClick={addLine}>
-            + Add another product
-          </button>
+          <Button variant="ghost" size="sm" onClick={addLine}>
+            <Plus className="size-3.5" /> Add another product
+          </Button>
 
-          <div className="order-total">
+          <div className="mt-3.5 border-t border-dashed border-slate-200 pt-3 text-right text-[15px]">
             Estimated total: <strong>{money(estimatedTotal)}</strong>
           </div>
 
-          {formError && <div className="field-error">{formError}</div>}
+          {formError && <div className="mt-1 text-xs text-red-600">{formError}</div>}
 
-          <div className="form-actions">
-            <button type="button" className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+          <div className="mt-5 flex justify-end gap-2.5">
+            <Button variant="ghost" onClick={() => setModalOpen(false)}>
               Cancel
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
+            </Button>
+            <Button type="submit" disabled={saving}>
               {saving ? "Placing…" : "Place Order"}
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Order detail modal */}
-      <Modal title={detail ? `Order #${detail.id}` : ""} open={Boolean(detail)} onClose={() => setDetail(null)}>
-        {detail && (
+      <Modal
+        title={detail ? `Order #${detail.id}` : "Order Details"}
+        open={detailLoading || Boolean(detail)}
+        onClose={() => setDetail(null)}
+      >
+        {detailLoading ? (
+          <Loading label="Loading order…" />
+        ) : (
+          detail && (
           <div>
-            <p className="muted">
+            <p className="mb-3 text-slate-500">
               Customer ID: {detail.customer_id} · Status: {detail.status}
             </p>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Product ID</th>
-                  <th className="num">Qty</th>
-                  <th className="num">Unit Price</th>
-                  <th className="num">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detail.items.map((it) => (
-                  <tr key={it.id}>
-                    <td>{it.product_id}</td>
-                    <td className="num">{it.quantity}</td>
-                    <td className="num">{money(it.unit_price)}</td>
-                    <td className="num">{money(it.subtotal)}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr>
+                    <th className={thClass}>Product ID</th>
+                    <th className={`${thClass} text-right`}>Qty</th>
+                    <th className={`${thClass} text-right`}>Unit Price</th>
+                    <th className={`${thClass} text-right`}>Subtotal</th>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={3} className="num"><strong>Total</strong></td>
-                  <td className="num"><strong>{money(detail.total_amount)}</strong></td>
-                </tr>
-              </tfoot>
-            </table>
+                </thead>
+                <tbody>
+                  {detail.items.map((it) => (
+                    <tr key={it.id}>
+                      <td className={tdClass}>{it.product_id}</td>
+                      <td className={`${tdClass} text-right`}>{it.quantity}</td>
+                      <td className={`${tdClass} text-right`}>{money(it.unit_price)}</td>
+                      <td className={`${tdClass} text-right`}>{money(it.subtotal)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td className="px-3 py-2.5 text-right font-bold" colSpan={3}>
+                      Total
+                    </td>
+                    <td className="px-3 py-2.5 text-right font-bold">{money(detail.total_amount)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
+          )
         )}
       </Modal>
 

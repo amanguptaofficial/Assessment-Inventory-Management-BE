@@ -1,6 +1,3 @@
-"""Tests for order endpoints and the core inventory business rules."""
-
-
 def test_create_order_reduces_stock_and_computes_total(client, product, customer):
     resp = client.post(
         "/api/orders",
@@ -8,11 +5,9 @@ def test_create_order_reduces_stock_and_computes_total(client, product, customer
     )
     assert resp.status_code == 201
     order = resp.json()
-    # 3 * 19.99 computed server-side
     assert float(order["total_amount"]) == 59.97
     assert order["items"][0]["quantity"] == 3
 
-    # stock dropped from 50 -> 47
     prod = client.get(f"/api/products/{product['id']}").json()
     assert prod["quantity_in_stock"] == 47
 
@@ -23,7 +18,6 @@ def test_order_insufficient_stock_rejected(client, product, customer):
         json={"customer_id": customer["id"], "items": [{"product_id": product["id"], "quantity": 999}]},
     )
     assert resp.status_code == 409
-    # stock unchanged
     assert client.get(f"/api/products/{product['id']}").json()["quantity_in_stock"] == 50
 
 
@@ -55,7 +49,6 @@ def test_order_multi_product_total(client, customer):
         },
     )
     assert resp.status_code == 201
-    # 2*10 + 4*2.5 = 30
     assert float(resp.json()["total_amount"]) == 30.0
 
 
@@ -67,7 +60,6 @@ def test_delete_order_restocks(client, product, customer):
     assert client.get(f"/api/products/{product['id']}").json()["quantity_in_stock"] == 45
 
     assert client.delete(f"/api/orders/{order['id']}").status_code == 204
-    # stock returned to 50
     assert client.get(f"/api/products/{product['id']}").json()["quantity_in_stock"] == 50
 
 

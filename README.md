@@ -7,7 +7,7 @@ Compose.
 
 | Layer    | Technology                                  |
 | -------- | ------------------------------------------- |
-| Frontend | React 18 (JavaScript) + Vite + React Router |
+| Frontend | React 18 (JavaScript) + Vite + Tailwind CSS v4 + React Router |
 | Backend  | Python 3.12 + FastAPI + SQLAlchemy 2        |
 | Database | PostgreSQL 16                               |
 | Infra    | Docker, Docker Compose, nginx               |

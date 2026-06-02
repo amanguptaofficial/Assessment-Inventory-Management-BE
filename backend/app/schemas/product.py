@@ -1,4 +1,3 @@
-"""Pydantic schemas for the Product resource."""
 from datetime import datetime
 from decimal import Decimal
 
@@ -13,12 +12,10 @@ class ProductBase(BaseModel):
 
 
 class ProductCreate(ProductBase):
-    """Payload for creating a product."""
+    pass
 
 
 class ProductUpdate(BaseModel):
-    """Payload for updating a product. All fields optional (partial update)."""
-
     name: str | None = Field(None, min_length=1, max_length=255)
     sku: str | None = Field(None, min_length=1, max_length=64)
     price: Decimal | None = Field(None, ge=0, max_digits=12, decimal_places=2)

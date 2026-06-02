@@ -1,7 +1,7 @@
 # Frontend — Inventory & Order Management
 
-Responsive **React 18** single-page app (JavaScript) built with **Vite**,
-talking to the FastAPI backend.
+Responsive **React 18** single-page app (JavaScript) built with **Vite** and
+styled with **Tailwind CSS v4**, talking to the FastAPI backend.
 
 ## Layout
 
@@ -12,16 +12,27 @@ src/
 ├── api/
 │   ├── client.js           # axios instance (env base URL) + error normaliser
 │   └── resources.js        # products/customers/orders/dashboard API wrappers
-├── components/             # Layout, Modal, ConfirmDialog, Field, StateViews
+├── components/
+│   ├── ui/                 # reusable primitives: Button, Badge, shared classes
+│   ├── Layout.jsx          # responsive topbar shell
+│   ├── Modal.jsx ConfirmDialog.jsx Field.jsx StateViews.jsx
 ├── context/ToastContext.jsx# global success/error toasts
 ├── hooks/useFetch.js       # reusable loading/error/refetch data hook
 ├── pages/                  # Dashboard, Products, Customers, Orders
-└── styles/index.css        # design system (responsive)
+└── styles/index.css        # `@import "tailwindcss"` + theme (toast keyframe)
 ```
 
+### Styling & icons
+Tailwind CSS v4 via the `@tailwindcss/vite` plugin — CSS-first config, so there
+is **no `tailwind.config.js`**. Utility classes are used directly in JSX;
+repeated primitives are extracted into `components/ui` (`Button`, `Badge`) and
+shared class strings (`styles.js`) to keep markup DRY and consistent. Icons come
+from **lucide-react** (tree-shaken, so only the icons used are bundled).
+
 ### Highlights
-- **Reusable building blocks** — one `Modal`, `ConfirmDialog`, `Field`, and a
-  `useFetch` hook power every page, so screens stay small and consistent.
+- **Reusable building blocks** — `Button`/`Badge` primitives plus one `Modal`,
+  `ConfirmDialog`, `Field`, and a `useFetch` hook power every page, so screens
+  stay small and consistent.
 - **Clear feedback** — inline form validation, plus global success/error toasts.
 - **Backend-driven errors** — FastAPI validation and conflict messages are
   surfaced verbatim to the user (e.g. "A product with SKU 'X' already exists").

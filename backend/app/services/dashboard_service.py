@@ -1,4 +1,3 @@
-"""Aggregate metrics for the dashboard."""
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 

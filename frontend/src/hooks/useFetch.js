@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../api/client";
 
-/**
- * Generic data-fetching hook with loading / error / refetch handling.
- * `fetcher` must be a stable (useCallback'd) function returning a promise.
- */
 export default function useFetch(fetcher) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,5 +19,5 @@ export default function useFetch(fetcher) {
     refetch();
   }, [refetch]);
 
-  return { data, loading, error, refetch, setData };
+  return { data, loading, error, refetch };
 }

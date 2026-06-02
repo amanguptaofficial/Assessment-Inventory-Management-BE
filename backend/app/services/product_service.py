@@ -1,8 +1,3 @@
-"""Business logic for products.
-
-Keeping persistence + rules here (rather than in the route handlers) makes the
-behaviour reusable and independently testable.
-"""
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 

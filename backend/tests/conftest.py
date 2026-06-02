@@ -1,9 +1,3 @@
-"""Pytest fixtures.
-
-Tests run against an isolated in-memory SQLite database so they are fast and
-need no external services. The `get_db` dependency is overridden to use the
-test session.
-"""
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -19,7 +13,7 @@ def db_session():
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
-        poolclass=StaticPool,  # one shared in-memory DB for the connection
+        poolclass=StaticPool,
     )
     TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
     Base.metadata.create_all(bind=engine)
@@ -40,9 +34,6 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
-    # Note: TestClient is intentionally NOT used as a context manager so the
-    # startup lifespan (which would create tables on the real Postgres engine)
-    # does not run — the db_session fixture already created the test schema.
     test_client = TestClient(app)
     yield test_client
     app.dependency_overrides.clear()

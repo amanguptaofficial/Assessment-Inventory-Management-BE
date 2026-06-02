@@ -1,6 +1,3 @@
-"""Tests for product endpoints and business rules."""
-
-
 def test_create_and_get_product(client):
     resp = client.post(
         "/api/products",

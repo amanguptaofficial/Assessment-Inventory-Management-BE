@@ -1,4 +1,3 @@
-"""Pydantic schemas for the Customer resource."""
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -11,7 +10,7 @@ class CustomerBase(BaseModel):
 
 
 class CustomerCreate(CustomerBase):
-    """Payload for creating a customer."""
+    pass
 
 
 class CustomerRead(CustomerBase):

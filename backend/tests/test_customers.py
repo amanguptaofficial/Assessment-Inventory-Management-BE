@@ -1,6 +1,3 @@
-"""Tests for customer endpoints and business rules."""
-
-
 def test_create_customer(client):
     resp = client.post(
         "/api/customers",
@@ -13,7 +10,7 @@ def test_create_customer(client):
 def test_duplicate_email_rejected(client, customer):
     resp = client.post(
         "/api/customers",
-        json={"full_name": "Another", "email": customer["email"], "phone": "555-1"},
+        json={"full_name": "Another", "email": customer["email"], "phone": "555-1000"},
     )
     assert resp.status_code == 409
 
@@ -21,7 +18,7 @@ def test_duplicate_email_rejected(client, customer):
 def test_invalid_email_rejected(client):
     resp = client.post(
         "/api/customers",
-        json={"full_name": "Bad Email", "email": "not-an-email", "phone": "555-1"},
+        json={"full_name": "Bad Email", "email": "not-an-email", "phone": "555-1000"},
     )
     assert resp.status_code == 422
 

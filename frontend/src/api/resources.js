@@ -1,8 +1,5 @@
 import client from "./client";
 
-// Thin, reusable resource wrappers. Each returns response data directly so the
-// pages stay declarative and free of axios boilerplate.
-
 export const productsApi = {
   list: () => client.get("/products").then((r) => r.data),
   get: (id) => client.get(`/products/${id}`).then((r) => r.data),

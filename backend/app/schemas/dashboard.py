@@ -1,4 +1,3 @@
-"""Schemas for dashboard summary endpoints."""
 from typing import List
 
 from app.schemas.product import ProductRead

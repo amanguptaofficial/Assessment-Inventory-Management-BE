@@ -4,11 +4,6 @@ const ToastContext = createContext(null);
 
 let idCounter = 0;
 
-/**
- * Lightweight global toast system. Provides `notify.success(msg)` /
- * `notify.error(msg)` to any component, satisfying the "clear error and
- * success messages" requirement without an extra dependency.
- */
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
@@ -36,9 +31,15 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={notify}>
       {children}
-      <div className="toast-container">
+      <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-2.5">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast toast-${t.type}`} onClick={() => remove(t.id)}>
+          <div
+            key={t.id}
+            onClick={() => remove(t.id)}
+            className={`max-w-[min(360px,calc(100vw-2.5rem))] animate-toast-in cursor-pointer rounded-lg px-[18px] py-3 font-medium text-white shadow-lg ${
+              t.type === "success" ? "bg-green-600" : "bg-red-600"
+            }`}
+          >
             {t.message}
           </div>
         ))}

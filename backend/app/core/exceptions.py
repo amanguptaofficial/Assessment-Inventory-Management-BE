@@ -1,14 +1,4 @@
-"""Domain-level exceptions.
-
-Services raise these technology-agnostic errors; a single FastAPI exception
-handler (see app.main) maps them to the correct HTTP status code. This keeps
-business logic free of HTTP concerns.
-"""
-
-
 class AppError(Exception):
-    """Base class for all domain errors."""
-
     status_code = 400
     message = "Bad request"
 
@@ -24,8 +14,6 @@ class NotFoundError(AppError):
 
 
 class ConflictError(AppError):
-    """Unique-constraint / duplicate violations (e.g. SKU or email already used)."""
-
     status_code = 409
     message = "Resource already exists"
 

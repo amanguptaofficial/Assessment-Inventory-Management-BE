@@ -1,17 +1,9 @@
-"""Business logic for orders.
-
-This is where the most important rules live:
-  * an order cannot be placed if any product has insufficient stock;
-  * the order total is computed server-side from current product prices;
-  * stock is decremented atomically when the order is created;
-  * deleting an order restocks the products (treated as a cancellation).
-"""
 from collections import defaultdict
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import InsufficientStockError, NotFoundError, ValidationError
+from app.core.exceptions import InsufficientStockError, NotFoundError
 from app.models.order import Order, OrderItem
 from app.models.product import Product
 from app.schemas.order import OrderCreate
@@ -30,10 +22,8 @@ def get_order(db: Session, order_id: int) -> Order:
 
 
 def create_order(db: Session, payload: OrderCreate) -> Order:
-    # Validate the customer exists (raises 404 otherwise).
     get_customer(db, payload.customer_id)
 
-    # Merge duplicate product lines so stock checks use the true requested total.
     requested: dict[int, int] = defaultdict(int)
     for item in payload.items:
         requested[item.product_id] += item.quantity
@@ -53,7 +43,7 @@ def create_order(db: Session, payload: OrderCreate) -> Order:
 
         subtotal = product.price * quantity
         total += subtotal
-        product.quantity_in_stock -= quantity  # decrement stock atomically
+        product.quantity_in_stock -= quantity
         order.items.append(
             OrderItem(
                 product_id=product.id,
@@ -71,7 +61,6 @@ def create_order(db: Session, payload: OrderCreate) -> Order:
 
 
 def delete_order(db: Session, order_id: int) -> None:
-    """Cancel an order and return its items to stock."""
     order = get_order(db, order_id)
     for item in order.items:
         product = db.get(Product, item.product_id)

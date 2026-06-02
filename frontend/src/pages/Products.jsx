@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { productsApi } from "../api/resources";
 import { extractErrorMessage } from "../api/client";
 import useFetch from "../hooks/useFetch";
@@ -7,6 +8,9 @@ import { Loading, ErrorState, EmptyState } from "../components/StateViews";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Field from "../components/Field";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
+import { cardClass, inputClass, thClass, tdClass } from "../components/ui/styles";
 
 const EMPTY = { name: "", sku: "", price: "", quantity_in_stock: "" };
 
@@ -26,7 +30,7 @@ export default function Products() {
   const notify = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null); // product being edited or null
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [formErrors, setFormErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -101,11 +105,11 @@ export default function Products() {
 
   return (
     <section>
-      <div className="page-header">
-        <h1>Products</h1>
-        <button className="btn btn-primary" onClick={openCreate}>
-          + Add Product
-        </button>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Products</h1>
+        <Button onClick={openCreate} className="max-sm:w-full">
+          <Plus className="size-4" /> Add Product
+        </Button>
       </div>
 
       {loading ? (
@@ -115,35 +119,39 @@ export default function Products() {
       ) : products.length === 0 ? (
         <EmptyState message="No products yet. Add your first product to get started." />
       ) : (
-        <div className="card">
-          <table className="table">
+        <div className={`${cardClass} overflow-x-auto`}>
+          <table className="w-full border-collapse text-sm">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>SKU</th>
-                <th className="num">Price</th>
-                <th className="num">In Stock</th>
-                <th className="actions-col">Actions</th>
+                <th className={thClass}>Name</th>
+                <th className={thClass}>SKU</th>
+                <th className={`${thClass} text-right`}>Price</th>
+                <th className={`${thClass} text-right`}>In Stock</th>
+                <th className={`${thClass} text-right`}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.name}</td>
-                  <td><code>{p.sku}</code></td>
-                  <td className="num">${Number(p.price).toFixed(2)}</td>
-                  <td className="num">
-                    <span className={`badge ${p.quantity_in_stock <= 10 ? "badge-warn" : "badge-ok"}`}>
-                      {p.quantity_in_stock}
-                    </span>
+                <tr key={p.id} className="hover:bg-slate-50">
+                  <td className={tdClass}>{p.name}</td>
+                  <td className={tdClass}>
+                    <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[13px]">{p.sku}</code>
                   </td>
-                  <td className="actions-col">
-                    <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>
-                      Edit
-                    </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => setToDelete(p)}>
-                      Delete
-                    </button>
+                  <td className={`${tdClass} text-right`}>${Number(p.price).toFixed(2)}</td>
+                  <td className={`${tdClass} text-right`}>
+                    <Badge tone={p.quantity_in_stock <= 10 ? "warn" : "ok"}>
+                      {p.quantity_in_stock}
+                    </Badge>
+                  </td>
+                  <td className={`${tdClass} whitespace-nowrap text-right`}>
+                    <div className="inline-flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
+                        <Pencil className="size-3.5" /> Edit
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => setToDelete(p)}>
+                        <Trash2 className="size-3.5" /> Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -159,14 +167,15 @@ export default function Products() {
       >
         <form onSubmit={onSubmit} noValidate>
           <Field label="Product Name" error={formErrors.name}>
-            <input name="name" value={form.name} onChange={onChange} placeholder="Wireless Mouse" />
+            <input className={inputClass} name="name" value={form.name} onChange={onChange} placeholder="Wireless Mouse" />
           </Field>
           <Field label="SKU / Code" error={formErrors.sku} hint="Must be unique">
-            <input name="sku" value={form.sku} onChange={onChange} placeholder="WM-001" />
+            <input className={inputClass} name="sku" value={form.sku} onChange={onChange} placeholder="WM-001" />
           </Field>
-          <div className="form-row">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Price" error={formErrors.price}>
               <input
+                className={inputClass}
                 name="price"
                 type="number"
                 step="0.01"
@@ -178,6 +187,7 @@ export default function Products() {
             </Field>
             <Field label="Quantity in Stock" error={formErrors.quantity_in_stock}>
               <input
+                className={inputClass}
                 name="quantity_in_stock"
                 type="number"
                 min="0"
@@ -187,13 +197,13 @@ export default function Products() {
               />
             </Field>
           </div>
-          <div className="form-actions">
-            <button type="button" className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+          <div className="mt-5 flex justify-end gap-2.5">
+            <Button variant="ghost" onClick={() => setModalOpen(false)}>
               Cancel
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
+            </Button>
+            <Button type="submit" disabled={saving}>
               {saving ? "Saving…" : editing ? "Update" : "Create"}
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>

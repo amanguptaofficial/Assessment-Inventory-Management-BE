@@ -1,9 +1,3 @@
-"""Optional seed script to populate sample data for demos.
-
-Run inside the backend container or venv:
-    python -m app.seed
-It is idempotent-ish: it skips creation when products/customers already exist.
-"""
 from app.core.database import Base, SessionLocal, engine
 from app.models.customer import Customer
 from app.models.product import Product

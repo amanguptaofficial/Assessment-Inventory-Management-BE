@@ -1,4 +1,3 @@
-"""Pydantic schemas for the Order resource."""
 from datetime import datetime
 from decimal import Decimal
 from typing import List
@@ -12,13 +11,6 @@ class OrderItemCreate(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    """Payload for creating an order.
-
-    The client supplies the customer and the requested line items only; unit
-    prices and the order total are computed server-side from current product
-    data, never trusted from the client.
-    """
-
     customer_id: int = Field(..., gt=0)
     items: List[OrderItemCreate] = Field(..., min_length=1)
 

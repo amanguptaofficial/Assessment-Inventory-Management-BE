@@ -1,9 +1,3 @@
-"""Order and OrderItem ORM models.
-
-An order is a header (customer + total) with one or more line items, so the
-system supports multi-product orders as required by the spec ("product
-reference(s)").
-"""
 from datetime import datetime
 
 from sqlalchemy import (
@@ -34,7 +28,7 @@ class Order(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    customer: Mapped["Customer"] = relationship(back_populates="orders")  # noqa: F821
+    customer: Mapped["Customer"] = relationship(back_populates="orders")
     items: Mapped[list["OrderItem"]] = relationship(
         back_populates="order",
         cascade="all, delete-orphan",
@@ -56,10 +50,8 @@ class OrderItem(Base):
         ForeignKey("products.id", ondelete="RESTRICT"), nullable=False, index=True
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    # Unit price captured at purchase time so historical orders stay accurate
-    # even if the product price later changes.
     unit_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     subtotal: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
 
     order: Mapped["Order"] = relationship(back_populates="items")
-    product: Mapped["Product"] = relationship(back_populates="order_items")  # noqa: F821
+    product: Mapped["Product"] = relationship(back_populates="order_items")

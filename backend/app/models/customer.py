@@ -1,4 +1,3 @@
-"""Customer ORM model."""
 from datetime import datetime
 
 from sqlalchemy import DateTime, Integer, String, func
@@ -19,6 +18,4 @@ class Customer(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    orders: Mapped[list["Order"]] = relationship(  # noqa: F821
-        back_populates="customer"
-    )
+    orders: Mapped[list["Order"]] = relationship(back_populates="customer")
